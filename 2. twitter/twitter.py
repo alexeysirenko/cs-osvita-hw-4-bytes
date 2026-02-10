@@ -1,53 +1,22 @@
 import sys
 
-ASCII_MAX = 0x7F
 CONT_MIN = 0x80
-CONT_MAX = 0xBF
-TWO_BYTE_MIN = 0xC0
-TWO_BYTE_MAX = 0xDF
-THREE_BYTE_MIN = 0xE0
-THREE_BYTE_MAX = 0xEF
-FOUR_BYTE_MIN = 0xF0
-FOUR_BYTE_MAX = 0xF7
+TWO_BYTE = 0xC0
+THREE_BYTE = 0xE0
+FOUR_BYTE = 0xF0
 
 
 def truncate(s: bytes, n: int) -> bytes:
-    s = s[:n]
+    s, i = s[:n], len(s[:n])
 
-    while len(s) > 0:
-        last = s[-1]
+    while i > 0 and CONT_MIN <= s[i - 1] < TWO_BYTE:
+        i -= 1
 
-        if last <= ASCII_MAX:
-            return s
+    if i == 0:
+        return b''
 
-        if CONT_MIN <= last <= CONT_MAX:
-            i = len(s) - 1
-            while i >= 0 and CONT_MIN <= s[i] <= CONT_MAX:
-                i -= 1
-
-            if i < 0:
-                return b''
-
-            start = s[i]
-            continuation_count = len(s) - 1 - i
-
-            if TWO_BYTE_MIN <= start <= TWO_BYTE_MAX:
-                expected = 1
-            elif THREE_BYTE_MIN <= start <= THREE_BYTE_MAX:
-                expected = 2
-            elif FOUR_BYTE_MIN <= start <= FOUR_BYTE_MAX:
-                expected = 3
-            else:
-                s = s[:i]
-                continue
-
-            if continuation_count == expected:
-                return s
-            else:
-                s = s[:i]
-
-        else:
-            s = s[:-1]
+    if s[i - 1] >= TWO_BYTE and len(s) - i != (1 if s[i - 1] < THREE_BYTE else 2 if s[i - 1] < FOUR_BYTE else 3):
+        return s[:i - 1]
 
     return s
 
