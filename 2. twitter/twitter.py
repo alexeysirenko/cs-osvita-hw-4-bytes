@@ -1,24 +1,12 @@
 import sys
 
-CONT_MIN = 0x80
-TWO_BYTE = 0xC0
-THREE_BYTE = 0xE0
-FOUR_BYTE = 0xF0
-
 
 def truncate(s: bytes, n: int) -> bytes:
-    s, i = s[:n], len(s[:n])
-
-    while i > 0 and CONT_MIN <= s[i - 1] < TWO_BYTE:
-        i -= 1
-
-    if i == 0:
-        return b''
-
-    if s[i - 1] >= TWO_BYTE and len(s) - i != (1 if s[i - 1] < THREE_BYTE else 2 if s[i - 1] < FOUR_BYTE else 3):
-        return s[:i - 1]
-
-    return s
+    if n >= len(s):
+        return s
+    while n > 0 and (s[n] & 0xC0) == 0x80:
+        n -= 1
+    return s[:n]
 
 
 with open('cases', 'rb') as f:
