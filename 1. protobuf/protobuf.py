@@ -2,17 +2,28 @@ import struct
 
 
 def encode(n: int) -> bytes:
-    """
-        Add your code here
-    """
-    pass
+    if n == 0:
+        return b'\x00'
+
+    result = bytearray()
+    while n > 0:
+        byte = n & 0x7F
+        n >>= 7
+        if n > 0:
+            byte |= 0x80
+        result.append(byte)
+    return bytes(result)
 
 
 def decode(var_int: bytes) -> int:
-    """
-        Add your code here
-    """
-    pass
+    result = 0
+    shift = 0
+    for byte in var_int:
+        result |= (byte & 0x7F) << shift
+        if not (byte & 0x80):
+            break
+        shift += 7
+    return result
 
 
 basic_tests = (

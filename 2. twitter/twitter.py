@@ -2,9 +2,11 @@ import sys
 
 
 def truncate(s: bytes, n: int) -> bytes:
-    """
-    Add your code here
-    """
+    if n >= len(s):
+        return s
+    while n > 0 and (s[n] & 0xC0) == 0x80:
+        n -= 1
+    return s[:n]
 
 
 with open('cases', 'rb') as f:
